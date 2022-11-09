@@ -11,8 +11,8 @@
 #define WHEEL_CIRCUMFERENCE   22 // 22 CM
 #define NOTCHES  20
 #define TICKPERIOD 1000
-#define MOVING_AVG_DELTA 0.9   // Apply moving average on Velocity to reduce noise from inertia
-
+#define MOVING_AVG_DELTA 0.85   // Apply moving average on Velocity to reduce noise from inertia
+#define PAUSE_PERIOD 500        // Velocity becomes 0 after 500 ms
 //SET UP PIN FOR WHEEL ENCODER
 
 #define WHEEL_ENCODER_LEFT_PORT GPIO_PORT_P2
@@ -47,7 +47,7 @@ void setup_TimerA1_1Mhz(void);
 void wheel_Encoder_Right_IRQ(void);
 void wheel_Encoder_Left_IRQ(void);
 void wheel_Encoder_Timer_INT(void);
-
+void wheelVelocity_Print(void);
 
 void setup_Wheel_Encoder(void){
 
@@ -166,7 +166,17 @@ void wheel_Encoder_Right_IRQ(void){
     }
 }
 
-volatile uint32_t print_counter = 0;
+
+
+void wheelVelocity_Print(){
+    static uint32_t print_counter = 0;
+    print_counter++ ;
+    if (print_counter > 1500){
+         printf("\nLeft wheel velocity:  %0.2f ",  wheel_Left_Velocity);
+         printf("\nRight wheel velocity:  %0.2f ",  wheel_Right_Velocity);
+         print_counter = 0;
+    }
+}
 
 void wheel_Encoder_Timer_INT(void){
     /* Increment global variable (count number of interrupt occurred) */
@@ -178,21 +188,15 @@ void wheel_Encoder_Timer_INT(void){
         wheel_Left_Time_Counter += TICKPERIOD;
     }
 
-    if (wheel_Left_Time_Counter /TICKPERIOD > 500.0){  // After 0.5s reset velocity
+    if (wheel_Left_Time_Counter /TICKPERIOD > PAUSE_PERIOD){  // After 0.5s reset velocity
         wheel_Left_Velocity= 0.0;
         wheel_Left_Time_Counter = 0;
     }
-    if (wheel_Right_Time_Counter /TICKPERIOD  > 500.0){ // After 0.5s reset velocity
+    if (wheel_Right_Time_Counter /TICKPERIOD  > PAUSE_PERIOD){ // After 0.5s reset velocity
         wheel_Right_Velocity= 0.0;
         wheel_Right_Time_Counter = 0;
     }
-    print_counter++ ;
-    if (print_counter > 1500){
-         printf("\nLeft wheel velocity:  %0.2f ",  wheel_Left_Velocity);
-         printf("\nRight wheel velocity:  %0.2f ",  wheel_Right_Velocity);
-         print_counter = 0;
-    }
-
+    wheelVelocity_Print();
 }
 
 //int main(void)
