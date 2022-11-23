@@ -8,6 +8,12 @@
 
 #include <stdio.h>
 
+void Moving_Forward(void);
+void Moving_Backward(void);
+void Moving_Right(void);
+void Moving_Left(void);
+void Stop_Moving(void);
+
 /* Timer_A PWM Configuration Parameter */
 Timer_A_PWMConfig pwmConfig =
 {
@@ -31,7 +37,7 @@ Timer_A_PWMConfig pwmConfig2 =
 
 
 int main(void)
- {
+{
     /* Halting the watchdog */
     MAP_WDT_A_holdTimer();
 
@@ -57,8 +63,8 @@ int main(void)
     GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN4);
     GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN5);
     //To configure Wheel to move forward
-    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN4);
-    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN4);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN5);
     GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN4, GPIO_PRIMARY_MODULE_FUNCTION);
     GPIO_setAsInputPinWithPullUpResistor(GPIO_PORT_P1, GPIO_PIN1);
     GPIO_clearInterruptFlag(GPIO_PORT_P1, GPIO_PIN1);
@@ -87,6 +93,7 @@ void PORT1_IRQHandler(void)
 {
     uint32_t status = MAP_GPIO_getEnabledInterruptStatus(GPIO_PORT_P1);
     GPIO_clearInterruptFlag(GPIO_PORT_P1, status);
+    static uint32_t state_mode = 0;
 
     if (status & GPIO_PIN1)
     {
@@ -104,14 +111,44 @@ void PORT1_IRQHandler(void)
 
 
     if (status & GPIO_PIN4)
-        {
-            GPIO_toggleOutputOnPin(GPIO_PORT_P4, GPIO_PIN0);
-            GPIO_toggleOutputOnPin(GPIO_PORT_P4, GPIO_PIN2);
-            GPIO_toggleOutputOnPin(GPIO_PORT_P4, GPIO_PIN4);
-            GPIO_toggleOutputOnPin(GPIO_PORT_P4, GPIO_PIN5);
+    {
+        switch (state_mode % 8){
+            case 0:
+                state_mode++;
+                Stop_Moving();
+                break;
+            case 1:
+                state_mode++;
+                Moving_Forward();
+                break;
+            case 2:
+                state_mode++;
+                Stop_Moving();
+                break;
+            case 3:
+                state_mode++;
+                Moving_Backward();
+                break;
+            case 4:
+                state_mode++;
+                Stop_Moving();
+                break;
+            case 5:
+                state_mode++;
+                Moving_Right();
+                break;
+            case 6:
+                state_mode++;
+                Stop_Moving();
+                break;
+            case 7:
+                state_mode++;
+                Moving_Left();
+                break;
         }
-}
 
+    }
+}
 
 
 void PORT2_IRQHandler(void)
@@ -132,3 +169,49 @@ void TA1_0_IRQHandler(void)
     /* Clear interrupt flag */
     Timer_A_clearCaptureCompareInterrupt(TIMER_A1_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
 }
+
+void Moving_Forward(void)
+{
+    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN0);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN2);
+
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN4);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN5);
+}
+
+void Moving_Backward(void)
+{
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN0);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN2);
+
+    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN4);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
+}
+
+void Moving_Right(void)
+{
+    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN0);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN2);
+
+    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN4);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
+}
+
+void Moving_Left(void)
+{
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN0);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN2);
+
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN4);
+    GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN5);
+}
+
+void Stop_Moving(void)
+{
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN0);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN2);
+
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN4);
+    GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
+}
+
