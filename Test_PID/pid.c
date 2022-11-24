@@ -7,8 +7,7 @@
 #define KI  200// 100
 #define KD 0 // 30
 #define DIV  1
-#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
 
 volatile int sum_error=0 ;
 volatile short int prev_error=0;
@@ -17,10 +16,10 @@ void straight_PID(){
     int error = leftWheelCount - rightWheelCount;
     clearLeftWheelCount();
     clearRightWheelCount();
-    printf("\nerror : %d", error);
+    //printf("\nerror : %d", error);
 
     sum_error += error;
-    printf(" sum_error : %d", sum_error);
+    //printf(" sum_error : %d", sum_error);
     int adjust = (KP * error) + (KI * sum_error) + (KD * (error -prev_error) ) ;
     prev_error = error;
     //printf(" used PWM: %d ",adjust);
@@ -28,15 +27,15 @@ void straight_PID(){
     int l_used_PWM  = pwmConfig2.dutyCycle -  adjust / 2 ;
     int r_used_PWM  =  pwmConfig.dutyCycle +  adjust / 2  ;
 
-    printf(" used PWM: %d ",l_used_PWM);
+    //printf(" used PWM: %d ",l_used_PWM);
+
+
+    pwmConfig2.dutyCycle = MAX(MIN(10000,l_used_PWM),1000);
+    pwmConfig.dutyCycle = MAX(MIN(10000,r_used_PWM),1000);
     if (motor_state =='0'){
         pwmConfig.dutyCycle = 0;
         pwmConfig2.dutyCycle = 0;
     }
-
-    pwmConfig2.dutyCycle = MAX(MIN(10000,l_used_PWM),0);
-    pwmConfig.dutyCycle = MAX(MIN(10000,r_used_PWM),0);
-
     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
 }

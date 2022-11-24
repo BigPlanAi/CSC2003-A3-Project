@@ -27,7 +27,7 @@ int main(void)
      {
     /* Halting the watchdog */
     WDT_A_holdTimer();
-
+    setup_barcode();
     setup_Wheel_Encoder();
     printf("\nFinished Wheel Setup");
 
@@ -63,13 +63,32 @@ int main(void)
 
     /* Enabling interrupts and starting the watchdog timer */
     Interrupt_enableInterrupt(INT_PORT1);
-    Interrupt_enableSleepOnIsrExit();
+    //Interrupt_enableSleepOnIsrExit();
     Interrupt_enableMaster();
 
+
+    uint32_t delay_counter = 0;
     /* Sleeping when not in use */
     while (1)
     {
-        PCM_gotoLPM0InterruptSafe();
+        delay_counter++;
+        if(delay_counter>50000) {
+            scan_barBuffer();
+            printf("\n All characters : ");
+            uint16_t i ;
+//            for( i = 0; i < charBuff.rear_index +1  ; i++){
+//                printf(" %c" , charBuff.buffer[i]);
+//            };
+//
+//            printf(" , Reverse characters : ");
+//            for( i = 0; i < reverse_charBuff.rear_index +1  ; i++){
+//                printf(" %c" , reverse_charBuff.buffer[i]);
+//            };
+            delay_counter=0;
+        }
+        //printf("\n hello");
+
+        //PCM_gotoLPM0InterruptSafe();
     }
 }
 
@@ -86,6 +105,9 @@ void PORT1_IRQHandler(void)
             pwmConfig2.dutyCycle = 0;
             motor_state ='0';
 
+            wheel_Right_Velocity = 0.0 ;
+            wheel_Left_Velocity = 0.0;
+
             stopLeftWheelCount();
             stopRightWheelCount();
             clearLeftWheelCount();
@@ -95,8 +117,8 @@ void PORT1_IRQHandler(void)
 
         }
         else {
-            pwmConfig.dutyCycle =  5000 ;   //Right
-            pwmConfig2.dutyCycle = 5000 ;  // Left
+            pwmConfig.dutyCycle =  2000 ;   //Right
+            pwmConfig2.dutyCycle = 2000 ;  // Left
             motor_state = '1';
             printf("\nI'm on ");
             startLeftWheelCount();
@@ -120,21 +142,31 @@ void PORT1_IRQHandler(void)
 
 
 
+
+
 void PORT2_IRQHandler(void)
 {
-    wheel_Encoder_Left_IRQ();
+
 
 }
 /* GPIO ISR */
 void PORT3_IRQHandler(void)
 {
+    wheel_Encoder_Left_IRQ();
     wheel_Encoder_Right_IRQ();
 
 }
 
 void TA1_0_IRQHandler(void)
 {
+
     wheel_Encoder_Timer_INT();
+    barcode_TIMERA1_IRQ();
     /* Clear interrupt flag */
     Timer_A_clearCaptureCompareInterrupt(TIMER_A1_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
+}
+
+void ADC14_IRQHandler(void)
+{
+    barcode_ADC14_IRQ();
 }

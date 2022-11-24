@@ -1,16 +1,16 @@
 
 #include "modules.h"
 
-#define WHEEL_CIRCUMFERENCE  (uint32_t) 22 // 22 CM
-#define NOTCHES (uint32_t)20
-#define TICKPERIOD (uint32_t)1000
+#define WHEEL_CIRCUMFERENCE  22 // 22 CM
+#define NOTCHES 20
+#define TICKPERIOD 1000
 #define MOVING_AVG_DELTA (float)0.5  // Apply moving average on Velocity to reduce noise from inertia
-#define PAUSE_PERIOD (uint32_t)1000        // Velocity becomes 0 after 500 ms
+#define PAUSE_PERIOD 100000        // Velocity becomes 0 after 500 ms
 //SET UP PIN FOR WHEEL ENCODER
 
-#define WHEEL_ENCODER_LEFT_PORT GPIO_PORT_P2
-#define WHEEL_ENCODER_LEFT_PIN GPIO_PIN6
-#define WHEEL_ENCODER_LEFT_INTPORT INT_PORT2
+#define WHEEL_ENCODER_LEFT_PORT GPIO_PORT_P3
+#define WHEEL_ENCODER_LEFT_PIN GPIO_PIN3
+#define WHEEL_ENCODER_LEFT_INTPORT INT_PORT3
 
 #define WHEEL_ENCODER_RIGHT_PORT GPIO_PORT_P3
 #define WHEEL_ENCODER_RIGHT_PIN GPIO_PIN2
@@ -164,16 +164,14 @@ void wheel_Encoder_Left_IRQ(void){
         else{
             wheel_Left_Time_Counter = wheel_Left_Time_Counter + Timer_A_getCounterValue(TIMER_A1_BASE) - wheel_Left_Time_Start - 1;
             if (wheel_Left_Velocity <  0.1){
+
                 wheel_Left_Velocity = WHEEL_CIRC_PER_NOTCH  /   (wheel_Left_Time_Counter * TIME_PER_CYCLE) ;
-                //wheel_Left_Velocity = 1  /   (wheel_Left_Time_Counter * TIME_PER_CYCLE) ;
             }
             else{
                 wheel_Left_Velocity = WHEEL_CIRC_PER_NOTCH  /   (wheel_Left_Time_Counter * TIME_PER_CYCLE) * MOVING_AVG_DELTA +  wheel_Left_Velocity * (1-MOVING_AVG_DELTA);
-                //wheel_Left_Velocity = 1   /   (wheel_Left_Time_Counter * TIME_PER_CYCLE) * MOVING_AVG_DELTA +  wheel_Left_Velocity * (1 - MOVING_AVG_DELTA);
-                //pid_Left_Straight();
 
             }
-
+            //printf("\nWheel left velocity %f", wheel_Left_Velocity );
             wheel_Left_Time_Start=  Timer_A_getCounterValue(TIMER_A1_BASE);
             wheel_Left_Time_Counter =  1;
         }
@@ -200,6 +198,7 @@ void wheel_Encoder_Right_IRQ(void){
             wheel_Right_Time_Counter = wheel_Right_Time_Counter + Timer_A_getCounterValue(TIMER_A1_BASE) - wheel_Right_Time_Start - 1;
             if (wheel_Left_Velocity <  0.1){
                 wheel_Right_Velocity = WHEEL_CIRC_PER_NOTCH  / (wheel_Right_Time_Counter * TIME_PER_CYCLE);
+
             }
             else{
                 wheel_Right_Velocity = WHEEL_CIRC_PER_NOTCH  / (wheel_Right_Time_Counter * TIME_PER_CYCLE) * (MOVING_AVG_DELTA) +  wheel_Right_Velocity * (1 -MOVING_AVG_DELTA);
@@ -235,7 +234,7 @@ void wheel_Encoder_Timer_INT(void){
     if (timer_count > 700 && motor_state == '1'){
         ///pid_Left_Straight();
         //pid_Right_Straight();
-        straight_PID();
+        //straight_PID();
         timer_count = 0;
     }
 
@@ -249,14 +248,16 @@ void wheel_Encoder_Timer_INT(void){
     }
 
     if (wheel_Left_Time_Counter /TICKPERIOD > PAUSE_PERIOD){  // After 0.5s reset velocity
+        //wheel_Left_Velocity= 30.0;
         wheel_Left_Velocity= 0.0;
         wheel_Left_Time_Counter = 0;
     }
     if (wheel_Right_Time_Counter /TICKPERIOD  > PAUSE_PERIOD){ // After 0.5s reset velocity
-        wheel_Right_Velocity= 0.0;
+        //wheel_Right_Velocity=  30.0;
+        wheel_Right_Velocity=  0.0;
         wheel_Right_Time_Counter = 0;
     }
-    wheelVelocity_Print();
+    //wheelVelocity_Print();
 }
 
 //int main(void)
