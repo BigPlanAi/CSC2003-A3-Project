@@ -81,10 +81,16 @@ int main(void)
     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
 
+    //Set up barcode
+    runBarcode();
+
     /* Enabling interrupts */
     Interrupt_enableInterrupt(INT_PORT1);
     Interrupt_enableSleepOnIsrExit();
     Interrupt_enableMaster();
+
+    //Start reading values from the line sensor
+    startConversion();
 
     /* Sleeping when not in use */
     while (1)

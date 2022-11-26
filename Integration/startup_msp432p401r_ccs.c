@@ -61,6 +61,8 @@ extern void PORT1_IRQHandler(void);
 extern void PORT2_IRQHandler(void);
 extern void PORT3_IRQHandler(void);
 extern void TA1_0_IRQHandler(void);
+extern void TA2_0_IRQHandler(void);
+extern void ADC14_IRQHandler(void);
 /* To be added by user */
 
 
@@ -100,7 +102,7 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* TA0_N ISR                 */
     TA1_0_IRQHandler,                             /* TA1_0 ISR                 */
     defaultISR,                             /* TA1_N ISR                 */
-    defaultISR,                             /* TA2_0 ISR                 */
+    TA2_0_IRQHandler,                             /* TA2_0 ISR                 */
     defaultISR,                             /* TA2_N ISR                 */
     defaultISR,                             /* TA3_0 ISR                 */
     defaultISR,                             /* TA3_N ISR                 */
@@ -112,7 +114,7 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* EUSCIB1 ISR               */
     defaultISR,                             /* EUSCIB2 ISR               */
     defaultISR,                             /* EUSCIB3 ISR               */
-    defaultISR,                             /* ADC14 ISR                 */
+    ADC14_IRQHandler,                             /* ADC14 ISR                 */
     defaultISR,                             /* T32_INT1 ISR              */
     defaultISR,                             /* T32_INT2 ISR              */
     defaultISR,                             /* T32_INTC ISR              */

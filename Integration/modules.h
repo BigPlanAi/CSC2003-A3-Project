@@ -46,3 +46,7 @@ extern void clearLeftWheelCount(void);
 extern void clearRightWheelCount(void);
 extern float getRightWheelDistance(void);
 extern float getLeftWheelDistance(void);
+
+/* Read Barcode Function */
+extern void runBarcode(void);
+extern void startConversion(void);
