@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <math.h>
-#include <ultrasonic.h>
 
 // ACCEL INIT DEFS ----------------------------------------------------------------------------------------------------
 // I2C Module used
