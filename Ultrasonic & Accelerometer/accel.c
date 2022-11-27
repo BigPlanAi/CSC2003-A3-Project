@@ -9,9 +9,11 @@
 // ACCEL INIT DEFS ----------------------------------------------------------------------------------------------------
 // I2C Module used
 #define I2C_MODULE EUSCI_B1_BASE
+#define I2C_MODULE_INTERRUPT_INT INT_EUSCIB1
 
 // Timers
 #define TIMER_MODULE TIMER_A1_BASE
+#define TIMER_MODULE_INTERRUPT_INT INT_TA1_0
 #define TIMER_TICK_PERIOD 32768
 #define TIMER_DIVIDER TIMER_A_CLOCKSOURCE_DIVIDER_10
 
@@ -361,10 +363,10 @@ static void initInterrupts()
             EUSCI_B_I2C_RECEIVE_INTERRUPT0);
 
     I2C_enableInterrupt(I2C_MODULE, EUSCI_B_I2C_TRANSMIT_INTERRUPT1);
-    Interrupt_enableInterrupt(INT_EUSCIB1);
+    Interrupt_enableInterrupt(I2C_MODULE_INTERRUPT_INT);
 
-    // Enable interrupts for TIMER_A1
-    Interrupt_enableInterrupt(INT_TA1_0);
+    // Enable interrupts for TIMER_A1_0
+    Interrupt_enableInterrupt(TIMER_MODULE_INTERRUPT_INT);
 
     // Enable interrupts globally
     Interrupt_enableMaster();

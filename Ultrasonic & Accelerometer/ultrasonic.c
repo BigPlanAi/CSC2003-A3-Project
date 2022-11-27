@@ -61,7 +61,8 @@
 
 #define SMA_PERIOD 20
 #define EMA_PERIOD 20
-// Thanks Terence for the tip about the weighting, might have forgotten it.
+// Weighting value in favour of previous EMAs.
+// Test diff values if time permits
 #define EMA_FILTER_WEIGHTAGE 0.20f
 // Datasheet value (in cm). Values higher than this are erroneous.
 #define HIGH_PASS_CUTOFF 400
@@ -225,55 +226,60 @@ void enqueue(struct FloatQueue *queue, float element)
 
 #pragma endregion
 
-void UtilityTime_initDelayTimer()
+// Init T32_0 to be a free run, 32-bit delay timer.
+// Divider set to 1 so we can feed in ticks
+void initDelayTimer()
 {
     // Init 32 Bit Timer
     Timer32_initModule(
         UTILITY_DELAY_TIMER,   // MCLK = 3Mhz
-        UTILITY_DELAY_DIVIDER, // 3Mhz/1 = 1s
+        UTILITY_DELAY_DIVIDER, // 3Mhz / 1 = 1s
         TIMER32_32BIT,         // 32 Bit timer
         TIMER32_FREE_RUN_MODE  // Free run mode
     );
 
     Interrupt_disableMaster();
 
-    // Enable interrupt
+    // Enable interrupt for INT_T32_INT1
     Interrupt_enableInterrupt(UTILITY_DELAY_INTERRUPT);
 
     Interrupt_enableMaster();
 }
 
-static uint32_t getRegisterValueToSet(uint32_t delayMs)
+// Pass ms delay as argument to convert to ticks
+static uint32_t converMSDelayForRegisterValue(uint32_t msDelay)
 {
     uint32_t timerFreq = CS_getMCLK() / UTILITY_DELAY_DIVIDER_INT;
-    return (timerFreq / 1000) * delayMs;
+    return (timerFreq / 1000) * msDelay;
 }
 
-void UtilityTime_delay(uint32_t delayMs)
+// Handy timer for ms delays, use for ultrasonic sensor pulses
+void utilityTimeDelay(uint32_t msDelay)
 {
     // Reset delay flag
     flagUtilTimerDelay = false;
 
     // Get register value to set
     // 3000 Ticks in Timer = 1ms
-    uint32_t registerValue = getRegisterValueToSet(delayMs);
+    // 32-bit because we set T32_0 to 32-bit.
+    uint32_t registerValue = converMSDelayForRegisterValue(msDelay);
 
     // Set the timer register value
     Timer32_setCount(UTILITY_DELAY_TIMER, registerValue);
-    uint32_t regValue = Timer32_getValue(UTILITY_DELAY_TIMER);
+    // uint32_t checkValue = Timer32_getValue(UTILITY_DELAY_TIMER);
 
-    // Start the timer
-    // It will interrupt when stopped
+    // Start the timer. It will interrupt when stopped
     Timer32_startTimer(UTILITY_DELAY_TIMER, true);
 
-    // wait for interrupt to occur, block.
+    // This is the delay. Wait for interrupt to occur, block until it is complete.
     while (!flagUtilTimerDelay)
         ;
 
+    // Stop timer
     Timer32_haltTimer(UTILITY_DELAY_TIMER);
 
-    // interrupt has occured, done!
-    return;
+    // Delay complete
+    // return;
 }
 
 #pragma region FILTERS
@@ -360,13 +366,15 @@ float Ultrasonic_getDistanceFromBackSensor()
     return latestSensorDist[ULTRASONIC_BUFFER_BACK_INDEX];
 }
 
+// You only need to supply a short 10uS pulse to the trigger input to start the ranging
+// Use to start ranging for sensor, use 1ms delay
 static void triggerUltrasonicSensor(UltrasonicSensorConfig *sensorConfig)
 {
 
     GPIO_setOutputHighOnPin(sensorConfig->triggerPort, sensorConfig->triggerPin);
 
-    // Set delay of 1ms to trigger ultrasonic sensor
-    UtilityTime_delay(1);
+    // Set delay of 1ms to trigger input to start the ranging
+    utilityTimeDelay(1);
 
     GPIO_setOutputLowOnPin(sensorConfig->triggerPort, sensorConfig->triggerPin);
 }
@@ -612,7 +620,7 @@ int main(void)
     /* Halting WDT */
     WDT_A_holdTimer();
 
-    UtilityTime_initDelayTimer();
+    initDelayTimer();
     initUltrasonicSensors();
 
     printf("Ultrasonic sensors initialised.\n");
