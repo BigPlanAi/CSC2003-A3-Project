@@ -33,7 +33,7 @@ void straight_PID(){
 
 
     // adjust both wheels
-    pwmConfig2.dutyCycle += adjust/2;
+    pwmConfig2.dutyCycle -= adjust/2;
     pwmConfig.dutyCycle += adjust/2;
     printf("Duty cycle 1: %d\t", pwmConfig.dutyCycle);
     printf("Duty cycle 2: %d\n", pwmConfig2.dutyCycle);
