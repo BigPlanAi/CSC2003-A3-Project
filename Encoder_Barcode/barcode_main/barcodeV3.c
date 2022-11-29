@@ -510,7 +510,7 @@ void logicForScannedOutput(char inputChar, int scannedOutputLength)
                     }
                 }
             }
-            //If scanned output has less than 3 characters
+            //If scanned output already has 3 or more characters
             else
             {
                 //Check if scannedTicks exceeds numOfTicks

@@ -1,4 +1,4 @@
-**Communication (MSP432 to ESPO1/M5StickC via UART)**
+## Communication (MSP432 to ESPO1/M5StickC via UART)
 
 
 | Name        |   Student Id  | GitHub Link                   |
