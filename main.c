@@ -8,6 +8,9 @@
 
 #include <stdio.h>
 
+#include "ultrasonic.h"
+#include "accelerometer.h"
+
 void Moving_Forward(void);
 void Moving_Backward(void);
 void Moving_Right(void);
@@ -16,25 +19,22 @@ void Stop_Moving(void);
 
 /* Timer_A PWM Configuration Parameter */
 Timer_A_PWMConfig pwmConfig =
-{
+    {
         TIMER_A_CLOCKSOURCE_SMCLK,
         TIMER_A_CLOCKSOURCE_DIVIDER_24,
         10000,
         TIMER_A_CAPTURECOMPARE_REGISTER_1,
         TIMER_A_OUTPUTMODE_RESET_SET,
-        0
-};
+        0};
 
 Timer_A_PWMConfig pwmConfig2 =
-{
+    {
         TIMER_A_CLOCKSOURCE_SMCLK,
         TIMER_A_CLOCKSOURCE_DIVIDER_24,
         10000,
         TIMER_A_CAPTURECOMPARE_REGISTER_2,
         TIMER_A_OUTPUTMODE_RESET_SET,
-        0
-};
-
+        0};
 
 int main(void)
 {
@@ -62,7 +62,7 @@ int main(void)
     /* Configuring P4.4 and P4.5 as Output. P2.4 as peripheral output for PWM and P1.1 for button interrupt */
     GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN4);
     GPIO_setAsOutputPin(GPIO_PORT_P4, GPIO_PIN5);
-    //To configure Wheel to move forward
+    // To configure Wheel to move forward
     GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN4);
     GPIO_setOutputLowOnPin(GPIO_PORT_P4, GPIO_PIN5);
     GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2, GPIO_PIN4, GPIO_PRIMARY_MODULE_FUNCTION);
@@ -70,10 +70,8 @@ int main(void)
     GPIO_clearInterruptFlag(GPIO_PORT_P1, GPIO_PIN1);
     GPIO_enableInterrupt(GPIO_PORT_P1, GPIO_PIN1);
 
-
-
     /* Configuring Timer_A to have a period of approximately 80ms and an initial duty cycle of 10% of that (1000 ticks)  */
-//    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
+    //    Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
 
     /* Enabling interrupts and starting the watchdog timer */
@@ -97,11 +95,13 @@ void PORT1_IRQHandler(void)
 
     if (status & GPIO_PIN1)
     {
-        if((pwmConfig.dutyCycle > 9000 || pwmConfig2.dutyCycle > 9000)){
+        if ((pwmConfig.dutyCycle > 9000 || pwmConfig2.dutyCycle > 9000))
+        {
             pwmConfig.dutyCycle = 0;
             pwmConfig2.dutyCycle = 0;
         }
-        else {
+        else
+        {
             pwmConfig.dutyCycle += 3000;
             pwmConfig2.dutyCycle += 3000;
         }
@@ -109,58 +109,54 @@ void PORT1_IRQHandler(void)
         Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig2);
     }
 
-
     if (status & GPIO_PIN4)
     {
-        switch (state_mode % 8){
-            case 0:
-                state_mode++;
-                Stop_Moving();
-                break;
-            case 1:
-                state_mode++;
-                Moving_Forward();
-                break;
-            case 2:
-                state_mode++;
-                Stop_Moving();
-                break;
-            case 3:
-                state_mode++;
-                Moving_Backward();
-                break;
-            case 4:
-                state_mode++;
-                Stop_Moving();
-                break;
-            case 5:
-                state_mode++;
-                Moving_Right();
-                break;
-            case 6:
-                state_mode++;
-                Stop_Moving();
-                break;
-            case 7:
-                state_mode++;
-                Moving_Left();
-                break;
+        switch (state_mode % 8)
+        {
+        case 0:
+            state_mode++;
+            Stop_Moving();
+            break;
+        case 1:
+            state_mode++;
+            Moving_Forward();
+            break;
+        case 2:
+            state_mode++;
+            Stop_Moving();
+            break;
+        case 3:
+            state_mode++;
+            Moving_Backward();
+            break;
+        case 4:
+            state_mode++;
+            Stop_Moving();
+            break;
+        case 5:
+            state_mode++;
+            Moving_Right();
+            break;
+        case 6:
+            state_mode++;
+            Stop_Moving();
+            break;
+        case 7:
+            state_mode++;
+            Moving_Left();
+            break;
         }
-
     }
 }
-
 
 void PORT2_IRQHandler(void)
 {
     wheel_Encoder_Left_IRQ();
-
 }
 /* GPIO ISR */
 void PORT3_IRQHandler(void)
 {
     wheel_Encoder_Right_IRQ();
-
 }
 
 void TA1_0_IRQHandler(void)
@@ -214,4 +210,3 @@ void Stop_Moving(void)
     GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN4);
     GPIO_setOutputHighOnPin(GPIO_PORT_P4, GPIO_PIN5);
 }
-

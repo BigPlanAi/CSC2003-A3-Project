@@ -55,9 +55,8 @@ extern unsigned long __STACK_END;
 
 
 /* External declarations for the interrupt handlers used by the application. */
-
-/* To be added by user */
-
+extern void TA2_0_IRQHandler (void);
+extern void T32_0_IRQHandler (void);
 
 /* Interrupt vector table.  Note that the proper constructs must be placed on this to  */
 /* ensure that it ends up at physical address 0x0000.0000 or at the start of          */
@@ -95,7 +94,7 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* TA0_N ISR                 */
     defaultISR,                             /* TA1_0 ISR                 */
     defaultISR,                             /* TA1_N ISR                 */
-    defaultISR,                             /* TA2_0 ISR                 */
+    TA2_0_IRQHandler,                             /* TA2_0 ISR                 */
     defaultISR,                             /* TA2_N ISR                 */
     defaultISR,                             /* TA3_0 ISR                 */
     defaultISR,                             /* TA3_N ISR                 */
@@ -108,7 +107,7 @@ void (* const interruptVectors[])(void) =
     defaultISR,                             /* EUSCIB2 ISR               */
     defaultISR,                             /* EUSCIB3 ISR               */
     defaultISR,                             /* ADC14 ISR                 */
-    defaultISR,                             /* T32_INT1 ISR              */
+    T32_0_IRQHandler,                             /* T32_INT1 ISR              */
     defaultISR,                             /* T32_INT2 ISR              */
     defaultISR,                             /* T32_INTC ISR              */
     defaultISR,                             /* AES ISR                   */

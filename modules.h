@@ -30,7 +30,6 @@ extern volatile char startRightWheel;
 extern volatile uint32_t leftWheelCount;
 extern volatile uint32_t rightWheelCount;
 
-
 /* Wheel Encoder Function*/
 extern void setup_Wheel_Encoder(void);
 extern void setup_TimerA1_1Mhz(void);

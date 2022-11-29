@@ -1,5 +1,9 @@
 {
   "files.associations": {
-    "stdbool.h": "c"
+    "stdbool.h": "c",
+    "accelerometer.h": "c",
+    "ultrasonic.h": "c",
+    "float.h": "c",
+    "limits.h": "c"
   }
 }

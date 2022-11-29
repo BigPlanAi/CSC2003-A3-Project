@@ -1,104 +1,24 @@
-/* DriverLib Includes */
-#include "driverlib.h"
+#include "ultrasonic.h"
 
-/* Standard Includes */
-#include <stdint.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <float.h>
+bool isFirstCalc = true;
 
-#pragma region DEFINITIONS
+// Cache of latest distances from the sensors.
+// Order: front, right, back, left
+float latestSensorDist[4];
 
-// DEFINES ----------------------------------------------------------------------------------------------------
-
-#define UTILITY_DELAY_TIMER TIMER32_0_BASE
-#define UTILITY_DELAY_INTERRUPT INT_T32_INT1
-#define UTILITY_DELAY_DIVIDER TIMER32_PRESCALER_1
-#define UTILITY_DELAY_DIVIDER_INT 1
-
-// Pins used
-#define LED1_PORT GPIO_PORT_P1
-#define LED1_PIN GPIO_PIN0
-
-// Trigger: P2.3, Echo: P1.7
-#define FRONT_ULTRASONIC_TRIGGER_PORT GPIO_PORT_P2
-#define FRONT_ULTRASONIC_TRIGGER_PIN GPIO_PIN3
-#define FRONT_ULTRASONIC_ECHO_PORT GPIO_PORT_P1
-#define FRONT_ULTRASONIC_ECHO_PIN GPIO_PIN7
-
-// Trigger: P5.1, Echo: P5.0
-#define RIGHT_ULTRASONIC_TRIGGER_PORT GPIO_PORT_P5
-#define RIGHT_ULTRASONIC_TRIGGER_PIN GPIO_PIN1
-#define RIGHT_ULTRASONIC_ECHO_PORT GPIO_PORT_P5
-#define RIGHT_ULTRASONIC_ECHO_PIN GPIO_PIN0
-
-// Trigger: P3.5, Echo: P5.2
-#define BACK_ULTRASONIC_TRIGGER_PORT GPIO_PORT_P3
-#define BACK_ULTRASONIC_TRIGGER_PIN GPIO_PIN5
-#define BACK_ULTRASONIC_ECHO_PORT GPIO_PORT_P5
-#define BACK_ULTRASONIC_ECHO_PIN GPIO_PIN2
-
-// Trigger: P3.7, Echo: P3.6
-#define LEFT_ULTRASONIC_TRIGGER_PORT GPIO_PORT_P3
-#define LEFT_ULTRASONIC_TRIGGER_PIN GPIO_PIN6
-#define LEFT_ULTRASONIC_ECHO_PORT GPIO_PORT_P3
-#define LEFT_ULTRASONIC_ECHO_PIN GPIO_PIN7
-
-// Timers
-#define ULTRASONIC_TIMER_MODULE TIMER_A2_BASE
-#define ULTRASONIC_TIMER_INT INT_TA2_0
-#define TIMER_A_TICKPERIOD 1000
-
-#define ULTRASONIC_BUFFER_FRONT_INDEX 0
-#define ULTRASONIC_BUFFER_LEFT_INDEX 1
-#define ULTRASONIC_BUFFER_RIGHT_INDEX 2
-#define ULTRASONIC_BUFFER_BACK_INDEX 3
-
-// Threshold (in cm). Too large? Check after integration.
-#define ULTRASONIC_DETECT_OBJECT_THRESHOLD 30.0f
-
-#define SMA_PERIOD 20
-#define EMA_PERIOD 20
-// Weighting value in favour of previous EMAs.
-// Test diff values if time permits
-#define EMA_FILTER_WEIGHTAGE 0.20f
-// Datasheet value (in cm). Values higher than this are erroneous.
-#define HIGH_PASS_CUTOFF 400
-// Datasheet value (in cm). Values lower than this are erroneous.
-#define LOW_PASS_CUTOFF 2
-
-// DEFS ----------------------------------------------------------------------------------------------------
-
-#pragma endregion
-
-// Float queue structure from Y1 module work + references online
-struct FloatQueue
-{
-    int size;
-    unsigned capacity;
-    float *array;
-};
-typedef struct FloatQueue FloatQueue;
-
-// Because you wanted to accommodate multiple sensors.
-struct UltrasonicSensorConfig
-{
-    uint_fast8_t triggerPort;
-    uint_fast16_t triggerPin;
-    uint_fast8_t echoPort;
-    uint_fast16_t echoPin;
-    uint32_t timer;
-    uint32_t *sensorInterruptCount;
-    // Index for buffer arr indexing to cache data
-    uint8_t bufferIndex;
-};
-typedef struct UltrasonicSensorConfig UltrasonicSensorConfig;
+bool flagUtilTimerDelay;
 
 // Can technically overflow but if it does this demo has gone on for too long
 uint32_t sensorInterruptCountVar;
 
+// Queue for Simple Moving Average filter to cache values for computation
+FloatQueue *smaQueue;
+// Queue for Exponential Moving Average filter to cache values for computation
+FloatQueue *emaQueue;
+// Last EMA value
+float previousEMA;
+
+// Configurations for ultrasonic sensors
 // Front sensor
 UltrasonicSensorConfig frontSensorConfig = {
     FRONT_ULTRASONIC_TRIGGER_PORT,
@@ -139,25 +59,11 @@ UltrasonicSensorConfig leftSensorConfig = {
     &sensorInterruptCountVar,
     ULTRASONIC_BUFFER_BACK_INDEX};
 
-// Queue for Simple Moving Average filter to cache values for computation
-FloatQueue *smaQueue;
-// Queue for Exponential Moving Average filter to cache values for computation
-FloatQueue *emaQueue;
-// Last EMA value
-float previousEMA;
-bool isFirstCalc = true;
-
-// Cache of latest distances from the sensors.
-// Order: front, right, back, left
-float latestSensorDist[4];
-
-static bool flagUtilTimerDelay;
-
 #pragma region QUEUE
 // QUEUE METHODS ----------------------------------------------------------------------------------------------------
 // Some lib that had helper methods for a queue. Butchered it for float.
 
-// Create queue. Static size, NOT dynamic. Initial size = 0
+// Create queue. static size, NOT dynamic. Initial size = 0
 struct FloatQueue *createQueue(unsigned capacity)
 {
     struct FloatQueue *queue = (struct FloatQueue *)malloc(sizeof(struct FloatQueue));
@@ -247,7 +153,7 @@ void initDelayTimer()
 }
 
 // Pass ms delay as argument to convert to ticks
-static uint32_t converMSDelayForRegisterValue(uint32_t msDelay)
+uint32_t converMSDelayForRegisterValue(uint32_t msDelay)
 {
     uint32_t timerFreq = CS_getMCLK() / UTILITY_DELAY_DIVIDER_INT;
     return (timerFreq / 1000) * msDelay;
@@ -330,12 +236,12 @@ float EMAFilter(FloatQueue *queue, float value)
 
 bool HighPassFilter(float dist)
 {
-    return (dist > HIGH_PASS_CUTOFF);
+    return (dist < HIGH_PASS_CUTOFF);
 }
 
 bool LowPassFilter(float dist)
 {
-    return (dist < LOW_PASS_CUTOFF);
+    return (dist > LOW_PASS_CUTOFF);
 }
 
 // FILTERS ----------------------------------------------------------------------------------------------------
@@ -368,7 +274,7 @@ float Ultrasonic_getDistanceFromBackSensor()
 
 // You only need to supply a short 10uS pulse to the trigger input to start the ranging
 // Use to start ranging for sensor, use 1ms delay
-static void triggerUltrasonicSensor(UltrasonicSensorConfig *sensorConfig)
+void triggerUltrasonicSensor(UltrasonicSensorConfig *sensorConfig)
 {
 
     GPIO_setOutputHighOnPin(sensorConfig->triggerPort, sensorConfig->triggerPin);
@@ -379,7 +285,7 @@ static void triggerUltrasonicSensor(UltrasonicSensorConfig *sensorConfig)
     GPIO_setOutputLowOnPin(sensorConfig->triggerPort, sensorConfig->triggerPin);
 }
 
-static uint32_t getDuration(UltrasonicSensorConfig *sensorConfig)
+uint32_t getDuration(UltrasonicSensorConfig *sensorConfig)
 {
 
     uint32_t pulseTime = 0;
@@ -393,7 +299,7 @@ static uint32_t getDuration(UltrasonicSensorConfig *sensorConfig)
     return pulseTime;
 }
 
-static float getDistance(UltrasonicSensorConfig *sensorConfig)
+float getDistance(UltrasonicSensorConfig *sensorConfig)
 {
     uint32_t pulseDuration = 0;
     float distance = 0;
@@ -427,7 +333,7 @@ static float getDistance(UltrasonicSensorConfig *sensorConfig)
     return distance;
 }
 
-static bool detectedObject(UltrasonicSensorConfig *sensorConfig)
+bool detectedObject(UltrasonicSensorConfig *sensorConfig)
 {
     bool objectDetected = false;
 
@@ -435,15 +341,14 @@ static bool detectedObject(UltrasonicSensorConfig *sensorConfig)
     *(sensorConfig->sensorInterruptCount) = 0;
 
     // Get distance from object.
-    float raw_distance = getDistance(sensorConfig)
+    float raw_distance = getDistance(sensorConfig);
 
-        printf("Raw distance: %.2fcm\n", raw_distance);
+    printf("Raw distance: %.2fcm\n", raw_distance);
     // printf("%.2f\n", raw_distance);
 
-    // Filter data
+    // Filter data. High pass and low pass clears out false readings.
     if (HighPassFilter(raw_distance) && LowPassFilter(raw_distance))
     {
-
         // KALMAN FILTER example
         // float filteredValue = Filter_KalmanFilter(raw_distance, &KALMAN_DATA);
         // printf("FilteredValue: %.2f\n", filteredValue);
@@ -463,7 +368,7 @@ static bool detectedObject(UltrasonicSensorConfig *sensorConfig)
         // printf("%.2f\n", emaFilterVal);
 
         // Cache value for retrieval by other mods.
-        latestSensorDistances[sensorConfig->bufferIndex] = raw_distance;
+        latestSensorDist[sensorConfig->bufferIndex] = raw_distance;
 
         // If distance is lower then threshold, object is near.
         objectDetected = raw_distance < ULTRASONIC_DETECT_OBJECT_THRESHOLD;
@@ -518,7 +423,6 @@ void TA2_0_IRQHandler(void)
 // Interrupt handler
 void T32_0_IRQHandler(void)
 {
-
     // Set delay flag to true, remove blocking mechanism
     flagUtilTimerDelay = true;
 
@@ -532,7 +436,7 @@ void T32_0_IRQHandler(void)
 
 // INIT METHODS ----------------------------------------------------------------------------------------------------
 
-static void initGPIO()
+void initGPIO()
 {
     // Configure LED1 pin as output
     GPIO_setOutputLowOnPin(LED1_PORT, LED1_PIN);
@@ -558,7 +462,7 @@ static void initGPIO()
     GPIO_setAsOutputPin(LEFT_ULTRASONIC_TRIGGER_PORT, LEFT_ULTRASONIC_TRIGGER_PIN);
 }
 
-static void initInterrupts()
+void initInterrupts()
 {
     // Disable interrupts globally
     Interrupt_disableMaster();
@@ -570,7 +474,7 @@ static void initInterrupts()
     Interrupt_enableMaster();
 }
 
-static void initTimers()
+void initTimers()
 {
     // Halt watchdog timer so that the microcontroller does not restart.
     WDT_A_holdTimer();
@@ -590,7 +494,7 @@ static void initTimers()
     Timer_A_clearTimer(ULTRASONIC_TIMER_MODULE);
 }
 
-static void initFilterQueues()
+void initFilterQueues()
 {
     // SMA Queue
     smaQueue = createQueue(SMA_PERIOD);
@@ -611,27 +515,35 @@ void initUltrasonicSensors()
 
     // Initialise ultrasonic filters queues
     initFilterQueues();
+
+    printf("Ultrasonic sensors initialised.\n");
 }
 
 #pragma endregion
 
-int main(void)
-{
-    /* Halting WDT */
-    WDT_A_holdTimer();
+// Main method for debugging and demonstrating ultrasonic sensor functionality.
+// int main(void)
+// {
+//     /* Halting WDT */
+//     WDT_A_holdTimer();
 
-    initDelayTimer();
-    initUltrasonicSensors();
+//     initDelayTimer();
 
-    printf("Ultrasonic sensors initialised.\n");
+//     initUltrasonicSensors();
 
-    while (1)
-    {
-        // Use check<side> to get distance cached into the buffer, then read data using Ultrasonic_getDistanceFrom<Side>Sensor()
+//     printf("Ultrasonic sensors initialised.\n");
 
-        UltrasonicDetectFront();
-        UltrasonicDetectRight();
-        UltrasonicDetectBack();
-        UltrasonicDetectLeft(); // Sensor is dead :(
-    }
-}
+//     while (1)
+//     {
+//         // Use UltrasonicDetect<side> to get distance cached into the buffer,
+//         // then read data using Ultrasonic_getDistanceFrom<Side>Sensor()
+//         if (UltrasonicDetectFront())
+//         {
+//             // Do something
+//             // printf("Front distance: %.2f\n", Ultrasonic_getDistanceFromFrontSensor());
+//         }
+//         // UltrasonicDetectRight();
+//         // UltrasonicDetectBack();
+//         // UltrasonicDetectLeft();
+//     }
+// }

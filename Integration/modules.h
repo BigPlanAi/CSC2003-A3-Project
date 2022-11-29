@@ -9,7 +9,7 @@
 
 extern void straight_PID(void);
 
-//motor PWM
+// motor PWM
 extern Timer_A_PWMConfig pwmConfig;
 extern Timer_A_PWMConfig pwmConfig2;
 extern volatile char motor_state;
@@ -28,7 +28,6 @@ extern volatile char startLeftWheel;
 extern volatile char startRightWheel;
 extern volatile uint32_t leftWheelCount;
 extern volatile uint32_t rightWheelCount;
-
 
 /* Wheel Encoder Function*/
 extern void setup_Wheel_Encoder(void);
