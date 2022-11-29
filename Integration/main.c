@@ -9,6 +9,8 @@
 
 #include <stdio.h>
 
+#include "modules.h"
+
 // declare functions
 void Moving_Forward(void);
 void Moving_Backward(void);
@@ -82,7 +84,7 @@ int main(void)
 
     /* Enabling interrupts */
     Interrupt_enableInterrupt(INT_PORT1);
-    Interrupt_enableSleepOnIsrExit();
+    //Interrupt_enableSleepOnIsrExit();
     Interrupt_enableMaster();
 
     // Start reading values from the line sensor
@@ -91,7 +93,7 @@ int main(void)
     /* Sleeping when not in use */
     while (1)
     {
-        PCM_gotoLPM3InterruptSafe();
+        caluclate_wheel_velocity();
     }
 }
 
@@ -168,21 +170,23 @@ void PORT1_IRQHandler(void)
     }
 }
 
-void PORT2_IRQHandler(void) // interrupt for left wheel encoder
-{
-    wheel_Encoder_Left_IRQ();
-}
-/* GPIO ISR */
-void PORT3_IRQHandler(void) // interrupt for right wheel encoder
+void PORT2_IRQHandler(void) // interrupt for right wheel encoder
 {
     wheel_Encoder_Right_IRQ();
+    
+}
+/* GPIO ISR */
+void PORT3_IRQHandler(void) // interrupt for left wheel encoder
+{
+    wheel_Encoder_Left_IRQ();
 }
 
 void TA1_0_IRQHandler(void) // interrupt for wheel encoder timer
 {
+    Timer_A_clearCaptureCompareInterrupt(TIMER_A1_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
     wheel_Encoder_Timer_INT();
     /* Clear interrupt flag */
-    Timer_A_clearCaptureCompareInterrupt(TIMER_A1_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
+    
 }
 
 void Moving_Forward(void) // function to move forward
