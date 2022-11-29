@@ -368,7 +368,7 @@ bool detectedObject(UltrasonicSensorConfig *sensorConfig)
         // printf("%.2f\n", emaFilterVal);
 
         // Cache value for retrieval by other mods.
-        latestSensorDist[sensorConfig->bufferIndex] = raw_distance;
+        latestSensorDist[sensorConfig->bufferIndex] = emaFilterVal;
 
         // If distance is lower then threshold, object is near.
         objectDetected = raw_distance < ULTRASONIC_DETECT_OBJECT_THRESHOLD;
@@ -383,25 +383,25 @@ bool detectedObject(UltrasonicSensorConfig *sensorConfig)
 
 bool UltrasonicDetectFront()
 {
-    printf("Front sensor: ");
+    printf("Front sensor: \n");
     return detectedObject(&frontSensorConfig);
 }
 
 bool UltrasonicDetectRight()
 {
-    printf("Right sensor: ");
+    printf("Right sensor: \n");
     return detectedObject(&rightSensorConfig);
 }
 
 bool UltrasonicDetectBack()
 {
-    printf("Back sensor: ");
+    printf("Back sensor: \n");
     return detectedObject(&backSensorConfig);
 }
 
 bool UltrasonicDetectLeft()
 {
-    printf("Left sensor: ");
+    printf("Left sensor: \n");
     return detectedObject(&leftSensorConfig);
 }
 
@@ -411,7 +411,7 @@ bool UltrasonicDetectLeft()
 
 // HANDLERS ----------------------------------------------------------------------------------------------------
 
-void TA2_0_IRQHandler(void)
+void TA3_0_IRQHandler(void)
 {
     // Increment global interrupt count
     sensorInterruptCountVar++;
@@ -521,7 +521,7 @@ void initUltrasonicSensors()
 
 #pragma endregion
 
-// Main method for debugging and demonstrating ultrasonic sensor functionality.
+// // Main method for debugging and demonstrating ultrasonic sensor functionality.
 // int main(void)
 // {
 //     /* Halting WDT */
@@ -540,7 +540,7 @@ void initUltrasonicSensors()
 //         if (UltrasonicDetectFront())
 //         {
 //             // Do something
-//             // printf("Front distance: %.2f\n", Ultrasonic_getDistanceFromFrontSensor());
+//             printf("Front distance: %.2fcm\n", Ultrasonic_getDistanceFromFrontSensor());
 //         }
 //         // UltrasonicDetectRight();
 //         // UltrasonicDetectBack();

@@ -47,8 +47,8 @@
 #define LEFT_ULTRASONIC_ECHO_PIN GPIO_PIN7
 
 // Timers
-#define ULTRASONIC_TIMER_MODULE TIMER_A2_BASE
-#define ULTRASONIC_TIMER_INT INT_TA2_0
+#define ULTRASONIC_TIMER_MODULE TIMER_A3_BASE
+#define ULTRASONIC_TIMER_INT INT_TA3_0
 #define TIMER_A_TICKPERIOD 1000
 
 #define ULTRASONIC_BUFFER_FRONT_INDEX 0
@@ -63,7 +63,7 @@
 #define EMA_PERIOD 20
 // Weighting value in favour of previous EMAs.
 // Test diff values if time permits
-#define EMA_FILTER_WEIGHTAGE 0.20f
+#define EMA_FILTER_WEIGHTAGE 0.8f
 // Datasheet value (in cm). Values higher than this are erroneous.
 #define HIGH_PASS_CUTOFF 400.0f
 // Datasheet value (in cm). Values lower than this are erroneous.
@@ -171,7 +171,7 @@ bool UltrasonicDetectLeft();
 
 // HANDLERS ----------------------------------------------------------------------------------------------------
 
-void TA2_0_IRQHandler(void);
+void TA3_0_IRQHandler(void);
 void T32_0_IRQHandler(void);
 
 // HANDLERS ----------------------------------------------------------------------------------------------------

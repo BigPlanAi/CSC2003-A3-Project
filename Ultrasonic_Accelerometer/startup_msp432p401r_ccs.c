@@ -1,6 +1,6 @@
 /*
  * -------------------------------------------
- *    MSP432 DriverLib - v3_21_00_05 
+ *    MSP432 DriverLib - v3_21_00_05
  * -------------------------------------------
  *
  * --COPYRIGHT--,BSD,BSD
@@ -42,7 +42,6 @@ static void nmiISR(void);
 static void faultISR(void);
 static void defaultISR(void);
 
-
 /* External declaration for the reset handler that is to be called when the */
 /* processor is started                                                     */
 extern void _c_int00(void);
@@ -53,101 +52,99 @@ extern void SystemInit(void);
 /* Linker variable that marks the top of the stack. */
 extern unsigned long __STACK_END;
 
-
 /* External declarations for the interrupt handlers used by the application. */
-extern void TA2_0_IRQHandler (void);
-extern void T32_0_IRQHandler (void);
+extern void TA3_0_IRQHandler(void);
+extern void T32_0_IRQHandler(void);
 
 /* Interrupt vector table.  Note that the proper constructs must be placed on this to  */
 /* ensure that it ends up at physical address 0x0000.0000 or at the start of          */
 /* the program if located at a start address other than 0.                            */
 #pragma RETAIN(interruptVectors)
 #pragma DATA_SECTION(interruptVectors, ".intvecs")
-void (* const interruptVectors[])(void) =
-{
-    (void (*)(void))((uint32_t)&__STACK_END),
-                                            /* The initial stack pointer */
-    resetISR,                               /* The reset handler         */
-    nmiISR,                                 /* The NMI handler           */
-    faultISR,                               /* The hard fault handler    */
-    defaultISR,                             /* The MPU fault handler     */
-    defaultISR,                             /* The bus fault handler     */
-    defaultISR,                             /* The usage fault handler   */
-    0,                                      /* Reserved                  */
-    0,                                      /* Reserved                  */
-    0,                                      /* Reserved                  */
-    0,                                      /* Reserved                  */
-    defaultISR,                             /* SVCall handler            */
-    defaultISR,                             /* Debug monitor handler     */
-    0,                                      /* Reserved                  */
-    defaultISR,                             /* The PendSV handler        */
-    defaultISR,                             /* The SysTick handler       */
-    defaultISR,                             /* PSS ISR                   */
-    defaultISR,                             /* CS ISR                    */
-    defaultISR,                             /* PCM ISR                   */
-    defaultISR,                             /* WDT ISR                   */
-    defaultISR,                             /* FPU ISR                   */
-    defaultISR,                             /* FLCTL ISR                 */
-    defaultISR,                             /* COMP0 ISR                 */
-    defaultISR,                             /* COMP1 ISR                 */
-    defaultISR,                             /* TA0_0 ISR                 */
-    defaultISR,                             /* TA0_N ISR                 */
-    defaultISR,                             /* TA1_0 ISR                 */
-    defaultISR,                             /* TA1_N ISR                 */
-    TA2_0_IRQHandler,                             /* TA2_0 ISR                 */
-    defaultISR,                             /* TA2_N ISR                 */
-    defaultISR,                             /* TA3_0 ISR                 */
-    defaultISR,                             /* TA3_N ISR                 */
-    defaultISR,                             /* EUSCIA0 ISR               */
-    defaultISR,                             /* EUSCIA1 ISR               */
-    defaultISR,                             /* EUSCIA2 ISR               */
-    defaultISR,                             /* EUSCIA3 ISR               */
-    defaultISR,                             /* EUSCIB0 ISR               */
-    defaultISR,                             /* EUSCIB1 ISR               */
-    defaultISR,                             /* EUSCIB2 ISR               */
-    defaultISR,                             /* EUSCIB3 ISR               */
-    defaultISR,                             /* ADC14 ISR                 */
-    T32_0_IRQHandler,                             /* T32_INT1 ISR              */
-    defaultISR,                             /* T32_INT2 ISR              */
-    defaultISR,                             /* T32_INTC ISR              */
-    defaultISR,                             /* AES ISR                   */
-    defaultISR,                             /* RTC ISR                   */
-    defaultISR,                             /* DMA_ERR ISR               */
-    defaultISR,                             /* DMA_INT3 ISR              */
-    defaultISR,                             /* DMA_INT2 ISR              */
-    defaultISR,                             /* DMA_INT1 ISR              */
-    defaultISR,                             /* DMA_INT0 ISR              */
-    defaultISR,                             /* PORT1 ISR                 */
-    defaultISR,                             /* PORT2 ISR                 */
-    defaultISR,                             /* PORT3 ISR                 */
-    defaultISR,                             /* PORT4 ISR                 */
-    defaultISR,                             /* PORT5 ISR                 */
-    defaultISR,                             /* PORT6 ISR                 */
-    defaultISR,                             /* Reserved 41               */
-    defaultISR,                             /* Reserved 42               */
-    defaultISR,                             /* Reserved 43               */
-    defaultISR,                             /* Reserved 44               */
-    defaultISR,                             /* Reserved 45               */
-    defaultISR,                             /* Reserved 46               */
-    defaultISR,                             /* Reserved 47               */
-    defaultISR,                             /* Reserved 48               */
-    defaultISR,                             /* Reserved 49               */
-    defaultISR,                             /* Reserved 50               */
-    defaultISR,                             /* Reserved 51               */
-    defaultISR,                             /* Reserved 52               */
-    defaultISR,                             /* Reserved 53               */
-    defaultISR,                             /* Reserved 54               */
-    defaultISR,                             /* Reserved 55               */
-    defaultISR,                             /* Reserved 56               */
-    defaultISR,                             /* Reserved 57               */
-    defaultISR,                             /* Reserved 58               */
-    defaultISR,                             /* Reserved 59               */
-    defaultISR,                             /* Reserved 60               */
-    defaultISR,                             /* Reserved 61               */
-    defaultISR,                             /* Reserved 62               */
-    defaultISR                              /* Reserved 63               */
+void (*const interruptVectors[])(void) =
+    {
+        (void (*)(void))((uint32_t)&__STACK_END),
+        /* The initial stack pointer */
+        resetISR,         /* The reset handler         */
+        nmiISR,           /* The NMI handler           */
+        faultISR,         /* The hard fault handler    */
+        defaultISR,       /* The MPU fault handler     */
+        defaultISR,       /* The bus fault handler     */
+        defaultISR,       /* The usage fault handler   */
+        0,                /* Reserved                  */
+        0,                /* Reserved                  */
+        0,                /* Reserved                  */
+        0,                /* Reserved                  */
+        defaultISR,       /* SVCall handler            */
+        defaultISR,       /* Debug monitor handler     */
+        0,                /* Reserved                  */
+        defaultISR,       /* The PendSV handler        */
+        defaultISR,       /* The SysTick handler       */
+        defaultISR,       /* PSS ISR                   */
+        defaultISR,       /* CS ISR                    */
+        defaultISR,       /* PCM ISR                   */
+        defaultISR,       /* WDT ISR                   */
+        defaultISR,       /* FPU ISR                   */
+        defaultISR,       /* FLCTL ISR                 */
+        defaultISR,       /* COMP0 ISR                 */
+        defaultISR,       /* COMP1 ISR                 */
+        defaultISR,       /* TA0_0 ISR                 */
+        defaultISR,       /* TA0_N ISR                 */
+        defaultISR,       /* TA1_0 ISR                 */
+        defaultISR,       /* TA1_N ISR                 */
+        defaultISR,       /* TA2_0 ISR                 */
+        defaultISR,       /* TA2_N ISR                 */
+        TA3_0_IRQHandler, /* TA3_0 ISR                 */
+        defaultISR,       /* TA3_N ISR                 */
+        defaultISR,       /* EUSCIA0 ISR               */
+        defaultISR,       /* EUSCIA1 ISR               */
+        defaultISR,       /* EUSCIA2 ISR               */
+        defaultISR,       /* EUSCIA3 ISR               */
+        defaultISR,       /* EUSCIB0 ISR               */
+        defaultISR,       /* EUSCIB1 ISR               */
+        defaultISR,       /* EUSCIB2 ISR               */
+        defaultISR,       /* EUSCIB3 ISR               */
+        defaultISR,       /* ADC14 ISR                 */
+        T32_0_IRQHandler, /* T32_INT1 ISR              */
+        defaultISR,       /* T32_INT2 ISR              */
+        defaultISR,       /* T32_INTC ISR              */
+        defaultISR,       /* AES ISR                   */
+        defaultISR,       /* RTC ISR                   */
+        defaultISR,       /* DMA_ERR ISR               */
+        defaultISR,       /* DMA_INT3 ISR              */
+        defaultISR,       /* DMA_INT2 ISR              */
+        defaultISR,       /* DMA_INT1 ISR              */
+        defaultISR,       /* DMA_INT0 ISR              */
+        defaultISR,       /* PORT1 ISR                 */
+        defaultISR,       /* PORT2 ISR                 */
+        defaultISR,       /* PORT3 ISR                 */
+        defaultISR,       /* PORT4 ISR                 */
+        defaultISR,       /* PORT5 ISR                 */
+        defaultISR,       /* PORT6 ISR                 */
+        defaultISR,       /* Reserved 41               */
+        defaultISR,       /* Reserved 42               */
+        defaultISR,       /* Reserved 43               */
+        defaultISR,       /* Reserved 44               */
+        defaultISR,       /* Reserved 45               */
+        defaultISR,       /* Reserved 46               */
+        defaultISR,       /* Reserved 47               */
+        defaultISR,       /* Reserved 48               */
+        defaultISR,       /* Reserved 49               */
+        defaultISR,       /* Reserved 50               */
+        defaultISR,       /* Reserved 51               */
+        defaultISR,       /* Reserved 52               */
+        defaultISR,       /* Reserved 53               */
+        defaultISR,       /* Reserved 54               */
+        defaultISR,       /* Reserved 55               */
+        defaultISR,       /* Reserved 56               */
+        defaultISR,       /* Reserved 57               */
+        defaultISR,       /* Reserved 58               */
+        defaultISR,       /* Reserved 59               */
+        defaultISR,       /* Reserved 60               */
+        defaultISR,       /* Reserved 61               */
+        defaultISR,       /* Reserved 62               */
+        defaultISR        /* Reserved 63               */
 };
-
 
 /* This is the code that gets called when the processor first starts execution */
 /* following a reset event.  Only the absolutely necessary set is performed,   */
@@ -169,50 +166,48 @@ void resetISR(void)
 /* by a debugger.                                                              */
 static void nmiISR(void)
 {
-    /* Fault trap exempt from ULP advisor */
-    #pragma diag_push
-    #pragma CHECK_ULP("-2.1")
+/* Fault trap exempt from ULP advisor */
+#pragma diag_push
+#pragma CHECK_ULP("-2.1")
 
     /* Enter an infinite loop. */
-    while(1)
+    while (1)
     {
     }
 
-    #pragma diag_pop
+#pragma diag_pop
 }
-
 
 /* This is the code that gets called when the processor receives a fault        */
 /* interrupt.  This simply enters an infinite loop, preserving the system state */
 /* for examination by a debugger.                                               */
 static void faultISR(void)
 {
-    /* Fault trap exempt from ULP advisor */
-    #pragma diag_push
-    #pragma CHECK_ULP("-2.1")
+/* Fault trap exempt from ULP advisor */
+#pragma diag_push
+#pragma CHECK_ULP("-2.1")
 
     /* Enter an infinite loop. */
-    while(1)
+    while (1)
     {
     }
 
-    #pragma diag_pop
+#pragma diag_pop
 }
-
 
 /* This is the code that gets called when the processor receives an unexpected  */
 /* interrupt.  This simply enters an infinite loop, preserving the system state */
 /* for examination by a debugger.                                               */
 static void defaultISR(void)
 {
-    /* Fault trap exempt from ULP advisor */
-    #pragma diag_push
-    #pragma CHECK_ULP("-2.1")
+/* Fault trap exempt from ULP advisor */
+#pragma diag_push
+#pragma CHECK_ULP("-2.1")
 
     /* Enter an infinite loop. */
-    while(1)
+    while (1)
     {
     }
 
-    #pragma diag_pop
+#pragma diag_pop
 }
