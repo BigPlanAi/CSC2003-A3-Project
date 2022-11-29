@@ -43,7 +43,7 @@ void dijkstra(int graph[V][V], int src)
         int u = minDistance(dist, sptSet);
  
         // Mark the node as iterated through
-        sptSet[u] = true;
+        sptSet[u] = true    ;
  
         // Update dist value of the adjacent vertices of the
         // picked vertex.

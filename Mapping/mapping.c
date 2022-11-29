@@ -1,3 +1,11 @@
+/*
+A mapping and navigation algorithm to 
+
+
+*/
+
+
+
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +17,7 @@
 
 int nodeCounter = 1;
 int count = 0;
+int arr[][2];
 
 struct node {
   int vertex;
@@ -51,11 +60,13 @@ void addEdge(struct Graph* graph, int s, int d) {
   newNode->next = graph->adjLists[s];
   graph->adjLists[s] = newNode;
   
+
   // Add edge from d to s
   newNode = createNode(s);
+  printf("d: ", newNode);
   newNode->next = graph->adjLists[d];
   graph->adjLists[d] = newNode;
-  
+
 }
 
 // Print the graph
@@ -133,6 +144,21 @@ void printStack(st *s) {
     printf("%d ", s->items[i]);
   }
   printf("\n");
+}
+
+void navigate () {
+  /* Dummy function to replicate wall following navigation algorithm */
+  int dist;
+
+  // for (int i = 0; i < 10; i++)
+  // {
+  //   nodeCounter++; // simulation, assumes that the car iteratively traversed through 10 nodes 
+  // }
+
+  dist > 5 ? moving_forward : moving_right 
+
+  
+
 }
 
 void goBackToStart(st* s, st* t) {
@@ -299,12 +325,12 @@ int main() {
   // addEdge(graph, 1, 7);
   // push(s, 2);
   // push(t, 6);
-  addEdge(graph, 7, 8);
-  push(s, 3);
-  push(t, 2);
-  addEdge(graph, 8, 9);
-  push(s, 3);
-  push(t, 2);
+  // addEdge(graph, 7, 8);
+  // push(s, 3);
+  // push(t, 2);
+  // addEdge(graph, 8, 9);
+  // push(s, 3);
+  // push(t, 2);
 
   // printf("Size of directional stack: %d", sizeof(s));
   // printf("Size of time stack: %d", sizeof(t));
