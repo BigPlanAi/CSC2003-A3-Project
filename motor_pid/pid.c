@@ -3,7 +3,7 @@
 // PID variables
 float KP = 200L;
 float KI = 10L;
-float KD = 5L;
+float KD = 0;
 
 
 
