@@ -1,9 +1,10 @@
 #include "modules.h"
 
 // PID variables
-float KP = 1.5;
-float KI = 0.6;
-float KD = 0.25;
+float KP = 200L;
+float KI = 10L;
+float KD = 5L;
+
 
 
 //error variables
