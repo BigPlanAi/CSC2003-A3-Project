@@ -467,7 +467,7 @@ void initInterrupts()
     // Disable interrupts globally
     Interrupt_disableMaster();
 
-    // Enable interrupt for INT_TA2_0
+    // Enable interrupt for INT_TA3_0
     Interrupt_enableInterrupt(ULTRASONIC_TIMER_INT);
 
     // Enable interrupts globally
@@ -479,7 +479,7 @@ void initTimers()
     // Halt watchdog timer so that the microcontroller does not restart.
     WDT_A_holdTimer();
 
-    // Config INT_TA2_0 for interrupt counting. 1MHz clock. Interrupts are every 1ms.
+    // Config INT_TA3_0 for interrupt counting. 1MHz clock. Interrupts are every 1ms.
     const Timer_A_UpModeConfig upConfig =
         {
             TIMER_A_CLOCKSOURCE_SMCLK,          // SMCLK Clock Source
