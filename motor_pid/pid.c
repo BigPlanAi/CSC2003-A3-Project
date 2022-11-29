@@ -1,9 +1,9 @@
 #include "modules.h"
 
 // PID variables
-float KP = 200;
-float KI = 10;
-float KD = 5;
+float KP = 1.5;
+float KI = 0.6;
+float KD = 0.25;
 
 
 //error variables
@@ -23,12 +23,12 @@ void straight_PID(){
     printf(" sum_error : %d\n", sum_error);
 
     //calculate difference in error
-    long dError = (error - lastError)*0.05;
-    int_error = int_error + 0.05*error;
+    long dError = (error - lastError);
+
 
     // calculate adjust amount for error correction
     float adjust =     (KP*error)/100.0f
-                    + (KI*int_error)/100.0f;
+                    + (KI*sum_error)/100.0f;
                     + (KD*dError)/100.0f;
 
 
