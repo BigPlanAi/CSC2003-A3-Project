@@ -221,7 +221,7 @@ void wheel_Encoder_Timer_INT(void){
     /* Increment global variable (count number of interrupt occurred) */
     static uint32_t timer_count = 0;
     timer_count++;
-    if (timer_count > 700){
+    if (timer_count > 1000){
         straight_PID();
         timer_count = 0;
     }
