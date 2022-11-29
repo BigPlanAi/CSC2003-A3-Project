@@ -1,0 +1,65 @@
+<html>
+
+<head>
+    <title>Car Dashboard</title>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"
+        integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <!-- <h1>Hello {{ username }}</h1> -->
+    <h1>Car DashBoard</h1>
+    <div>
+        <h1>Data Received: </h1>
+        <label>{{data}}</label>
+    </div>
+    <br>
+    <label id="carStatus">Status: Stopped</label>
+    <div>
+        <button id="start" onclick="start()">
+            Start
+        </button>
+        <button id="Stop" onclick="stop()">
+            Stop
+        </button>
+    </div>
+    <script>
+        function start() {
+            $.ajax({
+                url: '/commands',
+                data: JSON.stringify({ "method": "start" }),
+                type: 'POST',
+                dataType: "json",
+                contentType: "application/json",
+                success: function (response) {
+                    console.log(response);
+                    document.getElementById('carStatus').innerHTML = "Status: Started";
+                },
+                error: function (error) {
+                    console.log(error);
+                    document.getElementById('carStatus').innerHTML = "Status: Started (Already started)";
+                }
+            });
+        }
+
+        function stop() {
+            $.ajax({
+                url: '/commands',
+                data: JSON.stringify({ "method": "stop" }),
+                type: 'POST',
+                dataType: "json",
+                contentType: "application/json",
+                success: function (response) {
+                    console.log(response);
+                    document.getElementById('carStatus').innerHTML = "Status: Stopped";
+                },
+                error: function (error) {
+                    console.log(error);
+                    document.getElementById('carStatus').innerHTML = "Status: Stopped (Already Stopped)";
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
