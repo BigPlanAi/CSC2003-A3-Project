@@ -86,6 +86,7 @@ int main()
     // Adjacency Matrix
     createAdjMatrix(Adj, arr);
 
+    // Replace vertice links with cost
     replaceWithCost(Adj);
 
     // Print Adjacency Matrix

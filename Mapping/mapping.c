@@ -150,14 +150,14 @@ void navigate () {
   /* Dummy function to replicate wall following navigation algorithm */
   int dist;
 
-  for (int i = 0; i < 10; i++)
-  {
-    nodeCounter++; // simulation, assumes that the car iteratively traversed through 10 nodes 
-  }
+  // for (int i = 0; i < 10; i++)
+  // {
+  //   nodeCounter++; // simulation, assumes that the car iteratively traversed through 10 nodes 
+  // }
 
   dist > 5 ? moving_forward : moving_right 
 
-
+  
 
 }
 
