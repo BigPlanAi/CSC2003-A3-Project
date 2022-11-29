@@ -3,9 +3,6 @@
 Integrated code are in the "Integration" Folder
 
 
-Integrated Code here 
-
-
 TEAM NAME:	Copy C
 
 | SIT ID  |     Github ID       |       Module      |
