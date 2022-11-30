@@ -65,6 +65,7 @@ struct barcodeBuffer bar_buffer  = {.rear_index = -1};   // Buffer structure to 
 
 struct characterBuffer charBuff  ={.rear_index = -1};  // Buffer structure to store identified characters globally
 struct characterBuffer reverse_charBuff  = {.rear_index = -1}; // Buffer structure to store reversed identified characters globally
+
 //struct BarcodeChar
 //{
 //    char barcodeBinary[100];
@@ -94,21 +95,8 @@ volatile uint32_t scanCount;
 volatile uint32_t totalVal ;
 volatile uint16_t prev_velocity;
 volatile uint16_t avgVal  = 0;
-//
-//void barcode_setup(){
-//    strcpy(characters[0].barcodeBinary, "100001001"); //A 1110101000101110
-//    characters[0].barcodeChar = 'A';
-//
-//    strcpy(characters[1].barcodeBinary, "001011000"); //F 1011101110001010
-//    characters[1].barcodeChar = 'F';
-//
-//    strcpy(characters[2].barcodeBinary, "011010000"); //Z 1000111011101010
-//    characters[2].barcodeChar = 'Z';
-//
-//    strcpy(characters[3].barcodeBinary, "010010100"); //* 1000101110111010
-//    characters[3].barcodeChar = '*';
-//
-//}
+
+
 
 
 void setup_barcode(void){
@@ -140,49 +128,6 @@ void setup_barcode(void){
 
 }
 
-//void prototype_barcode_ADC14_IRQ(void){
-//    static uint16_t  p_counter = 150 ;
-//    static avg_delta;
-//    uint32_t status = ADC14_getEnabledInterruptStatus();
-//    if (ADC_INT0 & status)
-//    {
-//        //printf("\n adc INT  working");
-//        //printf("ADC");
-//
-//        uint32_t curADCResult = ADC14_getResult(ADC_MEM0);
-//        avgVal = curADCResult * AVG_DELTA +  avgVal * (1-AVG_DELTA);
-//        //avgVal = totalVal / scanCount;
-//        p_counter++;
-//        if (p_counter > 9000){
-//            printf("\n AVG VAL : %d",avgVal );
-//            printf(", global_color_threshold VAL : %d",global_color_threshold );
-//            p_counter = 0;
-//        }
-//
-//
-//        if (avgVal < global_color_threshold)
-//        {
-//           if (s_buffer.color_buffer[color_buffer.writer_index] != WHITE){
-//
-//               s_buffer.value_buffer[s_buffer.writer_index] += ;
-//               s_buffer.color_buffer = WHITE;
-//               s_buffer.writer_index++;
-//               s_buffer.value_buffer[s_buffer.writer_index]  = 0;
-//           }
-//        }
-//        else
-//        {
-//            if (s_buffer != WHITE){
-//
-//            }
-//        }
-//
-//        ADC14_clearInterruptFlag(status & ADC_INT0);
-//        ADC14_toggleConversionTrigger();
-//
-//    }
-//
-//}
 
 void barcode_ADC14_IRQ(void){
 
@@ -190,18 +135,9 @@ void barcode_ADC14_IRQ(void){
     ADC14_clearInterruptFlag(status);
     if (ADC_INT0 & status)
     {
-        //printf("\n adc INT  working");
-        //printf("ADC");
         uint32_t curADCResult = ADC14_getResult(ADC_MEM0);
-        //printf("%d " , curADCResult);
         scanCount++;
-
         totalVal += curADCResult;
-        //printf("%d \n" , scanCount);
-        //uPrintf("The scanned output is: ");
-        //uPrintf(scannedOutput);
-        //uPrintf("\n\r");
-
         ADC14_toggleConversionTrigger();
     }
 
@@ -215,7 +151,6 @@ void barcode_TIMERA1_IRQ(void){
         t_counter = 0;
         p_counter++;
 
-        //avgVal = totalVal / scanCount * AVG_DELTA +  avgVal * (1-AVG_DELTA);
         avgVal = totalVal / scanCount;
 
         if (p_counter > 200){
@@ -602,20 +537,12 @@ void dequeue_barBuffer(uint16_t skips){
 void scan_barBuffer(){
     if(check_barBuffer()){
         uint16_t i;
-//        for ( i = 0; i <bar_buffer.rear_index + 1  ; i++){
-//            printf("\nComparing results: ");
-//            printf("%d \n " , strcmp(characters[0].barcodeBinary, bar_buffer.buffer[i]));
-//
-//            if( 0 == strcmp(characters[0].barcodeBinary,  bar_buffer.buffer[i])){
-//                add_char_To_charBuff(characters[0].barcodeChar);
-//            }
-//        }
         uint16_t current_bar[ARR_SIZE -1];
         for (i = 0; i < ARR_SIZE-1  ; i++){
             current_bar[i] = bar_buffer.buffer[0][i];
-            //printf(" %d",bar_buffer.buffer[0][i]);
+
         }
-        //strcpy(current_bar, bar_buffer.buffer[0]);
+
         dequeue_barBuffer(1);
 
 //        char current_pattern[ARR_SIZE];
@@ -639,6 +566,7 @@ void scan_barBuffer(){
 //        printf("\n new pattern : %s" , current_pattern);
 
         //char match = match_barcode(current_bar);
+
         char match = match_barcode_by_long_lines(current_bar);
         if (match !='0' ){                       //!strcmp("100001001",  current_pattern)
             //add_char_To_charBuff(match);
@@ -800,6 +728,7 @@ void get_pattern_array(char isBlack)
     }
 }
 
+
 uint16_t store_distance(char isBlack)
 {
 
@@ -817,26 +746,17 @@ uint16_t store_distance(char isBlack)
          current_distance +=1;
         //printf("\n Added Distance to current bar %d", distance[rear]);
     }
-    //printf("\n Added current_distance  %d",current_distance);
+
     if (current_color != isBlack )
     {
         color_arr[rear] = current_color;
         distance[rear] = current_distance;
-        //printf("\n Added Distance to current bar %d",current_distance);
-        //printf(color_arr);
-        //printf(" \n prev velocity %d" ,prev_velocity );
-        //printf("\n Current Distance %d", current_distance);
         enqueue();
         current_distance = 0;
         did_change++;
     }
     current_color = isBlack;
     //prev_velocity = MIN(wheel_Right_Velocity ,  wheel_Left_Velocity);
-//    printf("\n isBlack %c ",isBlack);
-//    printf("\n current_color  %c", color_arr[rear]);
-
-
-    //printf("\n Added prev_velocity  %d",prev_velocity);
 
     return did_change;
 
